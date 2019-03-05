@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<bean id="ChHello" class="com.gc.action.ChHello" destroy-method="customDestroy" >
+		<!-- set 注入 -->
+		<!-- 		<property name="msg"> -->
+		<!-- 			<value>世界</value> -->
+		<!-- 		</property> -->
+		<!-- 构造方法注入 -->
+		<constructor-arg>
+			<value>宇宙</value>
+		</constructor-arg>
+		<!-- 		<property name="date"> -->
+		<!-- 			<bean id="date" class="java.util.Date"></bean> -->
+		<!-- 		</property> -->
+	</bean>
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="helloWorld">helloWorldAction</prop>
+			</props>
+		</property>
+		<property name="interceptors">
+			<list>
+				<bean name="welcomeInterceptor" class="com.gc.spmvc.common.util.WelcomeInterceptor">
+					<property name="hour">
+						<value>20</value>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="shieldProcessor" class="com.gc.spmvc.common.util.ShieldNogoodWordProcessor"></bean>
+	<bean id="helloWorldAction" class="com.gc.spmvc.action.HelloWorldAction">
+		<property name="name">
+			<value>simisama</value>
+		</property>
+		<property name="viewPage">
+			<value>index</value>
+		</property>
+	</bean>
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass">
+			<value>org.springframework.web.servlet.view.InternalResourceView</value>
+		</property>
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+	<context:component-scan base-package="com.gc.service"></context:component-scan>
+	<!--<bean id="userServiceImpl" class="com.gc.service.impl.UserServiceImpl" />-->
+	<!--<bean id="myRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">-->
+		<!--<property name="service" ref="userServiceImpl"/>-->
+		<!--<property name="serviceName" value="userRMI"/>-->
+		<!--<property name="serviceInterface" value="com.gc.service.UserService" />-->
+		<!--<property name="registryPort" value="9999"/>-->
+	<!--</bean>-->
+	<!--<bean id="myClient" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">-->
+		<!--<property name="serviceUrl" value="rmi:127.0.0.1:9999/myRMI"/>-->
+		<!--<property name="serviceInterface" value="com.gc.service.UserService" />-->
+	<!--</bean>-->
+</beans>

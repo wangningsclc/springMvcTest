@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC  "-//SPRING//DTD BEAN//EN"  "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="ChHello" class="com.gc.action.ChHello" destroy-method="customDestroy" >
+		<!-- set 注入 -->
+<!-- 		<property name="msg"> -->
+<!-- 			<value>世界</value> -->
+<!-- 		</property> -->
+		<!-- 构造方法注入 -->
+		<constructor-arg>
+			<value>宇宙</value>
+		</constructor-arg>
+<!-- 		<property name="date"> -->
+<!-- 			<bean id="date" class="java.util.Date"></bean> -->
+<!-- 		</property> -->
+	</bean>
+	<bean id="EnHello" class="com.gc.action.EnHello" init-method="init" autowire="autodetect" dependency-check="objects">
+
+		<property name="msg">
+			<value>world</value>
+		</property>
+ 		<constructor-arg>
+ 			<value>universe</value>
+ 		</constructor-arg>
+ 		<property name="createTime">
+ 			<!--<ref bean="date"/>-->
+ 			<ref local="createTime"/>
+ 		</property>
+	</bean>
+ 	<!--<bean id="endate" class="java.util.Date" ></bean>-->
+ 	<bean id="createTime" class="java.util.Date" ></bean>
+	<bean id="sama" class="com.gc.action.Sama">
+		<property name="name">
+			<value>晴明</value>
+		</property>
+	</bean>
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<value>messages</value>
+		</property>
+	</bean>
+	<bean id="log" class="com.gc.action.Log" />
+	<bean id="listener" class="com.gc.action.LogListener"></bean>
+	<bean id="logAfterAdvice" class="com.gc.action.LogAfterAdvice"></bean>
+	<bean id="logBeforeAdvice" class="com.gc.action.LogBeforeAdvice"></bean>
+	<bean id="logAroundAdvice" class="com.gc.action.LogAroundAdvice"></bean>
+	<bean id="logExceptionAdvice" class="com.gc.action.LogExceptionAdvice"></bean>
+	<bean id="skyDog" class="com.gc.action.SkyDogImpl">	</bean>
+	<!-- java 动态代理 -->
+	<bean id="logProxy" class="com.gc.action.LogProxy" />
+
+<!-- 	手工配置代理 -->
+	<bean id="logProxyFactory" class="org.springframework.aop.framework.ProxyFactoryBean">
+<!-- 		 CGLIB 代理 不需涉及接口的类  -->
+<!-- 		<property name="proxyTargetClass"> -->
+<!-- 			<value>true</value> -->
+<!-- 		</property> -->
+<!-- 	代理接口 -->
+<!-- 		<property name="proxyInterfaces"> -->
+<!-- 			<value>com.gc.action.SkyDogSkill</value> -->
+<!-- 		</property> -->
+<!-- 	被代理类 -->
+		<property name="target">
+			<ref bean="skyDog"/>
+		</property>
+<!-- 	指定代理类 -->
+		<property name="interceptorNames">
+			<list>
+				<!--<value>logAdvisor</value>-->
+				<value>logBeforeAdvice</value>
+				<value>logAfterAdvice</value>
+ 				<value>logAroundAdvice</value> 
+				<value>logExceptionAdvice</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 	自动代理 -->
+<!-- 	<bean id="autoProxyFactory" class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/> -->
+	<bean id="logAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice">
+			<ref bean="logBeforeAdvice"></ref>
+		</property>
+		<!-- 指定代理类 -->
+<!-- 		<property name="advice"> -->
+<!-- 			<ref bean="logAfterAdvice"></ref> -->
+<!-- 		</property> -->
+<!-- 		<property name="advice"> -->
+<!-- 			<ref bean="logAroundAdvice"></ref> -->
+<!-- 		</property> -->
+		<property name="patterns">
+			<value>.*castSkill.*</value>
+		</property>
+	</bean>
+	<bean id = "logAdvisor1" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice">
+			<ref bean="logAroundAdvice"></ref>
+		</property>
+		<property name="patterns">
+			<value>.*castSkill.*</value>
+		</property>
+	</bean>
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:mysql://127.0.0.1:3306/world?useUnicode=true</value>
+		</property>
+		<property name="username">
+			<value>root</value>
+		</property>
+		<property name="password">
+			<value>123456</value>
+		</property>
+	</bean>
+	
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+	</bean>
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+	</bean>
+	<bean id="userDao" class="com.gc.dao.UserDao">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="jdbcTemplate">
+			<ref bean="jdbcTemplate"/>
+		</property>
+		<property name="sql">
+			<value>insert into hoyi_user values (nvl((select max(id) from hoyi_user),0)+1,'jim','football',sysdate)</value>
+		</property>
+	</bean>
+	<!-- 申明事务处理 -->
+	<bean id="userDaoProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="target">
+			<ref bean="userDao"/>
+		</property>
+		<property name="transactionAttributes">
+			<props>
+<!-- 				如果当前没有事务，则新建一个事务 -->
+				<!-- 业务方法需要在一个事务中运行。如果方法运行中，已经处在一个事务中，那么加入到该事务，否则为自己创建一个新的事务 -->
+				<prop key="insert">PROPAGATION_REQUIRED</prop>
+				<!-- 当前如果有事务，Spring就会使用该事务；否则不会开启一个新事务 -->
+				<prop key="query">PROPAGATION_SUPPORTS</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- 申明事务处理  通过transactionInterceptor配置-->
+	<bean id="userDaoProxy1" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="interceptorNames">
+			<value>transactionInterceptor,userDao</value>
+		</property>
+	</bean>
+	<bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="transactionAttributeSource">
+			<value>com.gc.dao.UserDao.*=PROPAGATION_REQUIRED</value>
+		</property>
+	</bean>
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+			 <property name="dataSource" ref="dataSource" />
+		     <property name="hibernateProperties">
+			     <value>
+			       hibernate.dialect=org.hibernate.dialect.OracleDialect
+			       hibernate.show_sql=true
+			       hibernate.connection.autocommit=true
+			     </value>
+			   </property>
+			<property name="mappingResources">
+				<list>
+					<value>com/gc/dataset/User.hbm.xml</value>
+				</list>
+ 			</property>
+	</bean>
+	<bean id="userHiberDao" class="com.gc.dao.UserHiberDao">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	<bean id="sqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>springMvcTest/web/config/sqlMapConfig.xml</value>
+		</property>
+	</bean>
+	<bean id="userIbatisDao" class="com.gc.dao.UserIbatisDao">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="sqlMapClient" ref="sqlMap">
+		</property>
+	</bean>
+</beans>

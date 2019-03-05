@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC  "-//SPRING//DTD BEAN//EN"  "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="helloWorld">helloWorldAction</prop>
+			</props>
+		</property>
+		<property name="interceptors">
+			<list>
+				<bean name="welcomeInterceptor" class="com.gc.spmvc.common.util.WelcomeInterceptor">
+					<property name="hour">
+						<value>20</value>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="helloWorldAction" class="com.gc.spmvc.action.HelloWorldAction">
+		<property name="name">
+			<value>simisama</value>
+		</property>
+		<property name="viewPage">
+			<value>index</value>
+		</property>
+	</bean>
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass">
+			<value>org.springframework.web.servlet.view.InternalResourceView</value>
+		</property>
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+</beans>
